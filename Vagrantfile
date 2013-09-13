@@ -11,17 +11,21 @@ Vagrant.configure('2') do |config|
     chef.add_recipe 'logrotate'
     chef.json = {
       :logrotate => {
+        :frequency => 'daily',
+        :rotation_limit => 60,
+        :creating_log =>'0660 root utmp',
+        :delay_compress => true,
+        :date_ext => true,
         :rotations => {
-          :rails_app => {
-            :log_paths => %w(
-              /var/www/deploys/rails_app/shared/log/*.log
-              /var/www/deploys/rails_app_staging/shared/log/*.log
-            ),
-            :frequency => 'daily',
-            :rotation_limit => 60,
-            :creating_log =>'0660 root utmp',
-            :delay_compress => true,
-            :date_ext => true,
+          :app_production => {
+            :log_paths => '/var/www/deploys/rails_app/shared/log/*.log',
+            :last_action => <<-CMD.gsub(/\s+/, ' ')
+              pid=/var/www/deploys/rails_app/shared/pids/unicorn.pid;
+              test -s $pid && kill -USR1 "$(cat $pid)"
+            CMD
+          },
+          :app_staging => {
+            :log_paths => '/var/www/deploys/rails_app_staging/shared/log/*.log',
             :last_action => <<-CMD.gsub(/\s+/, ' ')
               pid=/var/www/deploys/rails_app/shared/pids/unicorn.pid;
               test -s $pid && kill -USR1 "$(cat $pid)"
