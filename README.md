@@ -18,7 +18,7 @@ Usage
 
 Role based logrotate example:
 
-```json
+```ruby
 run_list(
   'recipe[logrotate]'
 )
